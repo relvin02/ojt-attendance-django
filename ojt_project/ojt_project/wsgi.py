@@ -1,11 +1,5 @@
 import os
 from django.core.wsgi import get_wsgi_application
-from django.conf import settings
-from whitenoise import WhiteNoise
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ojt_project.settings')
 application = get_wsgi_application()
-
-# Serve media files in production
-application = WhiteNoise(application, root=os.path.join(settings.BASE_DIR, 'staticfiles'))
-application.add_files(os.path.join(settings.BASE_DIR, 'media'), prefix='media/')

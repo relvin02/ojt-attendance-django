@@ -1,10 +1,14 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
 from . import views
+from .media_server import serve_media
 
 urlpatterns = [
     # Home
     path('', views.index, name='index'),
+    
+    # Media serving (for production environments)
+    path('media/<path:filepath>', serve_media, name='serve_media'),
     
     # Authentication
     path('login/', views.login_view, name='login'),
