@@ -1564,8 +1564,8 @@ def academic_staff_print_dtr(request):
                     dtr_data.append({
                         'date': current_date,
                         'day': day_of_week,
-                        'check_in': att.check_in_time.time() if att.check_in_time else None,
-                        'check_out': att.check_out_time.time() if att.check_out_time else None,
+                        'check_in': att.check_in_time if att.check_in_time else None,
+                        'check_out': att.check_out_time if att.check_out_time else None,
                         'hours': round(hours, 2) if hours is not None else 0,
                         'status': att.status,
                         'was_late': att.was_late,
