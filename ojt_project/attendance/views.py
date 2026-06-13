@@ -63,9 +63,8 @@ def academic_staff_required(view_func):
 # Helper Functions
 def extract_face_encoding(image_file):
     """
-    Extract face encoding from an uploaded image file using MediaPipe.
-    Returns a tuple: (encoding_list, error_message) or (None, None) if MediaPipe unavailable,
-    or (None, error_message) if validation fails.
+    Extract face encoding from an uploaded image file.
+    Returns a tuple: (encoding_list, error_message) or (None, error_message) if validation fails.
     
     Security checks:
     - Exactly ONE face must be detected
@@ -73,16 +72,7 @@ def extract_face_encoding(image_file):
     - Returns validation feedback
     """
     try:
-        import mediapipe as mp
-        from scipy.spatial.distance import euclidean
-    except ImportError:
-        # MediaPipe not available - return None to allow student to be added without facial recognition
-        return None, None
-    
-    try:
-        # Initialize MediaPipe Face Detection
-        mp_face_detection = mp.solutions.face_detection
-        
+        import face_recognition
         # Read image file
         image = Image.open(image_file)
         image_array = np.array(image)
@@ -91,60 +81,26 @@ def extract_face_encoding(image_file):
         if len(image_array.shape) == 3 and image_array.shape[2] == 4:
             image_array = image_array[:, :, :3]
         
-        # Convert BGR if needed (OpenCV uses BGR)
-        if len(image_array.shape) == 3 and image_array.shape[2] == 3:
-            image_rgb = cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB)
-        else:
-            image_rgb = image_array
-        
-        # Detect faces using MediaPipe
-        with mp_face_detection.FaceDetection(
-            model_selection=0,  # 0 for shorter-range (< 2m), 1 for full-range
-            min_detection_confidence=0.5
-        ) as face_detection:
-            results = face_detection.process(image_rgb)
+        # Detect faces
+        face_locations = face_recognition.face_locations(image_array)
         
         # SECURITY: Exactly one face must be detected
-        if not results.detections:
+        if len(face_locations) == 0:
             return None, "No face detected in the image. Please use a clear photo of your face."
-        
-        if len(results.detections) > 1:
+        elif len(face_locations) > 1:
             return None, "Multiple faces detected. Please use a photo with only your face."
         
-        # Extract face bounding box and landmarks
-        detection = results.detections[0]
-        bbox = detection.location_data.bounding_box
+        # Get face encodings
+        face_encodings = face_recognition.face_encodings(image_array, face_locations)
         
-        # Get face coordinates
-        h, w, _ = image_rgb.shape
-        x_min = int(bbox.xmin * w)
-        y_min = int(bbox.ymin * h)
-        x_max = int((bbox.xmin + bbox.width) * w)
-        y_max = int((bbox.ymin + bbox.height) * h)
+        if not face_encodings:
+            return None, "Could not extract face features. Please use a clearer photo."
         
-        # Ensure valid coordinates
-        x_min = max(0, x_min)
-        y_min = max(0, y_min)
-        x_max = min(w, x_max)
-        y_max = min(h, y_max)
+        # Return the face encoding as a list (for JSON serialization)
+        return face_encodings[0].tolist(), None
         
-        # Check if face region is valid
-        if x_max - x_min < 20 or y_max - y_min < 20:
-            return None, "Face is too small in the image. Please use a clearer photo."
-        
-        # Extract face region
-        face_region = image_rgb[y_min:y_max, x_min:x_max]
-        
-        # Create a normalized face encoding (using face region as embedding)
-        # Resize face to standard size for consistency
-        face_resized = cv2.resize(face_region, (128, 128))
-        
-        # Flatten and normalize the face region as embedding
-        face_encoding = face_resized.flatten().astype(np.float32) / 255.0
-        
-        # Return encoding as list for JSON serialization
-        return face_encoding.tolist(), None
-        
+    except ImportError:
+        return None, "Face recognition is currently unavailable. Please contact support."
     except Exception as e:
         error_msg = f"Error processing image: {str(e)}"
         print(error_msg)
