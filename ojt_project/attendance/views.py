@@ -64,7 +64,8 @@ def academic_staff_required(view_func):
 def extract_face_encoding(image_file):
     """
     Extract face encoding from an uploaded image file.
-    Returns a tuple: (encoding_list, error_message) or (None, error_message) if validation fails.
+    Returns a tuple: (encoding_list, error_message) or (None, None) if face_recognition unavailable,
+    or (None, error_message) if validation fails.
     
     Security checks:
     - Exactly ONE face must be detected
@@ -73,6 +74,12 @@ def extract_face_encoding(image_file):
     """
     try:
         import face_recognition
+    except ImportError:
+        # Face recognition not available on this server (e.g., PythonAnywhere)
+        # Return (None, None) to allow student to be added without facial recognition
+        return None, None
+    
+    try:
         # Read image file
         image = Image.open(image_file)
         image_array = np.array(image)
@@ -99,8 +106,6 @@ def extract_face_encoding(image_file):
         # Return the face encoding as a list (for JSON serialization)
         return face_encodings[0].tolist(), None
         
-    except ImportError:
-        return None, "Face recognition is currently unavailable. Please contact support."
     except Exception as e:
         error_msg = f"Error processing image: {str(e)}"
         print(error_msg)
@@ -682,8 +687,10 @@ def student_profile(request):
                     student.face_encoding = face_encoding
                     student.save()
                     messages.success(request, 'Profile updated successfully! Face recognition is now enabled.')
-                else:
+                elif error_msg:  # Only show error if there was an actual error (not just unavailable)
                     messages.error(request, f'Profile updated, but could not register face: {error_msg}')
+                else:
+                    messages.success(request, 'Profile updated successfully!')
             else:
                 messages.success(request, 'Profile updated successfully!')
             
@@ -720,8 +727,10 @@ def academic_staff_edit_student(request, student_id):
                     student.face_encoding = face_encoding
                     student.save()
                     messages.success(request, f'Profile for {student.first_name} {student.last_name} updated successfully! Face recognition is now enabled.')
-                else:
+                elif error_msg:
                     messages.error(request, f'Profile updated for {student.first_name} {student.last_name}, but could not register face: {error_msg}')
+                else:
+                    messages.success(request, f'Profile for {student.first_name} {student.last_name} updated successfully!')
             else:
                 messages.success(request, f'Profile for {student.first_name} {student.last_name} updated successfully!')
             
@@ -1351,8 +1360,10 @@ def academic_staff_add_student(request):
                         student.face_encoding = face_encoding
                         student.save()
                         messages.success(request, f"Student {student.first_name} {student.last_name} added successfully! Face recognition enabled.")
-                    else:
+                    elif error_msg:
                         messages.warning(request, f"Student {student.first_name} {student.last_name} added, but face recognition not enabled: {error_msg}")
+                    else:
+                        messages.success(request, f"Student {student.first_name} {student.last_name} added successfully!")
                 else:
                     messages.success(request, f"Student {student.first_name} {student.last_name} added successfully!")
                 
