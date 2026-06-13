@@ -506,14 +506,14 @@
                 <td>{{ day.day|truncatewords:1 }}</td>
                 <td>
                     {% if day.check_in %}
-                        {{ day.check_in|date:"H:i" }}
+                        {{ day.check_in|localtime|date:"H:i" }}
                     {% else %}
                         --
                     {% endif %}
                 </td>
                 <td>
                     {% if day.check_out %}
-                        {{ day.check_out|date:"H:i" }}
+                        {{ day.check_out|localtime|date:"H:i" }}
                     {% else %}
                         --
                     {% endif %}
