@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+from attendance.media_server import serve_media
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,7 +15,10 @@ urlpatterns = [
 ]
 
 # Serve media files in all environments (including production)
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Use custom view for production media serving
+urlpatterns += [
+    path('media/<path:filepath>', serve_media, name='serve_media'),
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
