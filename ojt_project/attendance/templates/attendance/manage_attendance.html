@@ -50,8 +50,8 @@
                     <tr>
                         <td>{{ att.student.id_number }}</td>
                         <td>{{ att.date }}</td>
-                        <td>{% if att.check_in_time %}{{ att.check_in_time|date:"H:i" }}{% endif %}</td>
-                        <td>{% if att.check_out_time %}{{ att.check_out_time|date:"H:i" }}{% endif %}</td>
+                        <td>{% if att.check_in_time %}{{ att.check_in_time|localtime|date:"H:i" }}{% endif %}</td>
+                        <td>{% if att.check_out_time %}{{ att.check_out_time|localtime|date:"H:i" }}{% endif %}</td>
                            <td>
                                 {% if att.status == 'present' %}
                                     <span class="badge bg-success">Present</span>

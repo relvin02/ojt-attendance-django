@@ -60,8 +60,8 @@
                     <tr>
                         <td>{{ attendance.date }}</td>
                         <td>{{ attendance.company.name }}</td>
-                        <td>{% if attendance.check_in_time %}{{ attendance.check_in_time|date:"H:i" }}{% endif %}</td>
-                        <td>{% if attendance.check_out_time %}{{ attendance.check_out_time|date:"H:i" }}{% endif %}</td>
+                        <td>{% if attendance.check_in_time %}{{ attendance.check_in_time|localtime|date:"H:i" }}{% endif %}</td>
+                        <td>{% if attendance.check_out_time %}{{ attendance.check_out_time|localtime|date:"H:i" }}{% endif %}</td>
                         <td>{{ attendance.get_hours_worked|floatformat:2 }} hours</td>
                         <td>
                             {% if attendance.status == 'present' %}

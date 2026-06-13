@@ -142,7 +142,7 @@
                                             <span class="badge bg-light text-dark">{{ att.status }}</span>
                                         {% endif %}
                                 </td>
-                                <td>{{ att.check_in_time|date:"H:i" }}</td>
+                                <td>{{ att.check_in_time|localtime|date:"H:i" }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

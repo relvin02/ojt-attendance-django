@@ -213,8 +213,8 @@
                             {% for att in today_attendances %}
                             <tr>
                                 <td>{{ att.student.id_number }}</td>
-                                <td>{% if att.check_in_time %}<strong>{{ att.check_in_time|date:"H:i" }}</strong>{% else %}<span class="text-muted">-</span>{% endif %}</td>
-                                <td>{% if att.check_out_time %}<strong>{{ att.check_out_time|date:"H:i" }}</strong>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                                <td>{% if att.check_in_time %}<strong>{{ att.check_in_time|localtime|date:"H:i" }}</strong>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                                <td>{% if att.check_out_time %}<strong>{{ att.check_out_time|localtime|date:"H:i" }}</strong>{% else %}<span class="text-muted">-</span>{% endif %}</td>
                                 <td>
                                     {% if att.status == 'present' %}
                                         <span class="badge" style="background-color: #28a745;">Present</span>

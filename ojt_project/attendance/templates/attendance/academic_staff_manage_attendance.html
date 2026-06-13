@@ -97,7 +97,7 @@
                         </td>
                         <td>
                             {% if attendance.check_in_time %}
-                                <span class="badge bg-info">{{ attendance.check_in_time|date:"H:i" }}</span>
+                                <span class="badge bg-info">{{ attendance.check_in_time|localtime|date:"H:i" }}</span>
                             {% else %}
                                 <span class="badge bg-light text-dark">N/A</span>
                             {% endif %}
@@ -118,7 +118,7 @@
                         </td>
                         <td>
                             {% if attendance.check_out_time %}
-                                <span class="badge bg-warning">{{ attendance.check_out_time|date:"H:i" }}</span>
+                                <span class="badge bg-warning">{{ attendance.check_out_time|localtime|date:"H:i" }}</span>
                             {% else %}
                                 <span class="badge bg-light text-dark">N/A</span>
                             {% endif %}
