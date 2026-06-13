@@ -10,6 +10,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
+    "rgcoder.pythonanywhere.com",
     ".trycloudflare.com",
     ".ngrok-free.dev",
 ]
