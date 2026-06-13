@@ -1,0 +1,269 @@
+{% extends "attendance/base.html" %}
+
+{% block title %}Reports - {{ program.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+    }
+    .stat-card.success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+    .stat-card.danger {
+        background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+    }
+    .stat-card.warning {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    .stat-card.info {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    .stat-card h6 {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+        opacity: 0.9;
+    }
+    .stat-card .display-6 {
+        font-size: 28px;
+        font-weight: bold;
+        margin: 0;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="mb-3">
+            <div>
+                <h1 class="h2">Program Reports</h1>
+                <p class="text-muted">Program: <strong>{{ program.name }}</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Form -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Filter Date Range</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" 
+                       value="{{ start_date }}">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" 
+                       value="{{ end_date }}">
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <h6>Total Records</h6>
+            <p class="display-6">{{ stats.total_records }}</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card success">
+            <h6>Present</h6>
+            <p class="display-6">{{ stats.present }}</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card danger">
+            <h6>Absent</h6>
+            <p class="display-6">{{ stats.absent }}</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card warning">
+            <h6>Late</h6>
+            <p class="display-6">{{ stats.late }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Student Performance -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Student Performance Report</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Total Days</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                        <th>Late</th>
+                        <th>Hours Worked</th>
+                        <th>Attendance Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in student_stats %}
+                    <tr>
+                        <td><strong>{{ stat.student.id_number }}</strong></td>
+                        <td>{{ stat.student.first_name }} {{ stat.student.last_name }}</td>
+                        <td><span class="badge bg-info">{{ stat.total_days }}</span></td>
+                        <td><span class="badge bg-success">{{ stat.present }}</span></td>
+                        <td><span class="badge bg-danger">{{ stat.absent }}</span></td>
+                        <td><span class="badge bg-warning">{{ stat.late }}</span></td>
+                        <td><strong>{{ stat.hours_worked }} hrs</strong></td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     data-width="{{ stat.attendance_rate }}"
+                                     aria-valuenow="{{ stat.attendance_rate }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    {{ stat.attendance_rate }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No attendance data available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Overall Statistics</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Students
+                        <span class="badge bg-primary badges-lg">{{ stats.total_students }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Attendance Records
+                        <span class="badge bg-secondary badges-lg">{{ stats.total_records }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Present Rate
+                        <span class="badge bg-success badges-lg">
+                            {% if stats.total_records > 0 %}
+                                {{ stats.present|floatformat:0 }}%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Absent Rate
+                        <span class="badge bg-danger badges-lg">
+                            {% if stats.total_records > 0 %}
+                                {{ stats.absent|floatformat:0 }}%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Company Distribution</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for company in company_stats %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ company.company }}
+                        <span class="badge bg-info badges-lg">{{ company.count }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted">No company data available</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Breakdown -->
+<div class="card">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Last 7 Days Breakdown</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th class="text-success">Present</th>
+                        <th class="text-danger">Absent</th>
+                        <th class="text-warning">Late</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for daily in daily_stats %}
+                    <tr>
+                        <td><strong>{{ daily.date }}</strong></td>
+                        <td>
+                            <span class="badge bg-success">{{ daily.present }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-danger">{{ daily.absent }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-warning">{{ daily.late }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Apply progress bar widths from data attributes
+    document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
+        const width = bar.getAttribute('data-width');
+        bar.style.width = width + '%';
+    });
+});
+</script>

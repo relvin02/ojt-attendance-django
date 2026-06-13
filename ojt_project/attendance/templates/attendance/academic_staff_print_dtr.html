@@ -1,0 +1,684 @@
+{% extends "attendance/base.html" %}
+
+{% block title %}Print DTR{% endblock %}
+
+{% block extra_css %}
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    @media print {
+        /* Portrait compact layout for printing with narrow margins */
+        @page { size: A4 portrait; margin: 4mm; }
+        .no-print { display: none !important; }
+        /* Hide site navbar brand (icon + title) in print */
+        .navbar-brand { display: none !important; }
+        /* Hide top navigation and any site header in print */
+        .navbar, header, .site-header, .top-nav, .navbar-toggler, .main-header { display: none !important; }
+        /* Hide all sidebars and navigation menus */
+        .sidebar, .side-nav, .sidenav, .nav-sidebar, .left-nav, .navbar-nav, aside, [role="navigation"] { display: none !important; }
+        /* Hide student selector form */
+        .student-selector { display: none !important; }
+        /* Hide any floating/fixed navigation elements */
+        nav, .nav, [role="navigation"], .menu { display: none !important; }
+        /* Hide site footer in print to save space */
+        footer { display: none !important; }
+        /* Hide page-header from base template (but keep dtr-header visible) */
+        .page-header { display: none !important; }
+        
+        /* Remove all wrapper margins and padding */
+        .content-wrapper { margin: 0 !important; padding: 0 !important; }
+        main { margin: 0 !important; padding: 0 !important; }
+        .container-fluid { margin: 0 !important; padding: 0 !important; }
+        .row { margin: 0 !important; padding: 0 !important; }
+        .col { margin: 0 !important; padding: 0 !important; }
+        
+        /* Ensure body and main take full width */
+        body, html { width: 100%; margin: 0; padding: 0; height: auto; }
+        body { font-size: 8px; font-family: Arial, Helvetica, sans-serif; color: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+        /* Use full width, remove container visual borders and spacing */
+        .dtr-container { page-break-inside: avoid; width: 100%; max-width: 190mm; margin: 0; padding: 2px; border: none; box-sizing: border-box; }
+
+        /* Smaller header space */
+        .dtr-header { margin-bottom: 2px; padding-bottom: 0; border-bottom: 1px solid #999; }
+        .dtr-header h2 { font-size: 20px; margin: 0 0 2px 0; }
+        .dtr-header p { font-size: 8px; margin: 0; }
+
+        /* Stack student info vertically to save horizontal space */
+        .dtr-student-info { display: block; margin-bottom: 4px; padding: 4px; background: #f9f9f9; border: 1px solid #ddd; }
+        .dtr-student-info .info-item { margin-bottom: 2px; }
+        .info-item { font-size: 8px; }
+
+        /* Make table very compact so more rows fit per page */
+        .dtr-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 8px; margin: 6px 0; }
+        .dtr-table th { padding: 2px 4px; font-size: 8px; border: 1px solid #bbb; background: #2c3e50; color: #fff; }
+        .dtr-table td { padding: 2px 4px; font-size: 8px; border: 1px solid #ddd; }
+        .dtr-table .date-cell { font-size: 8px; text-align: left; }
+        .dtr-table td, .dtr-table th { line-height: 1; }
+        .dtr-table tr:nth-child(even) { background: #f9f9f9; }
+        
+        .status-present { background: #d4edda; color: #155724; font-weight: bold; }
+        .status-late { background: #fff3cd; color: #856404; font-weight: bold; }
+        .status-absent { background: #f8d7da; color: #721c24; font-weight: bold; }
+        .status-undertime { background: #e2e3e5; color: #383d41; font-weight: bold; }
+        .status-no_record { background: #f0f0f0; color: #666; }
+
+        /* Reduce summary footprint */
+        .dtr-summary { display: flex; gap: 4px; padding: 4px; margin-top: 8px; border: 1px solid #bdc3c7; background: #ecf0f1; }
+        .summary-item { padding: 4px; border: 1px solid #ccc; font-size: 8px; }
+        .summary-label { font-size: 8px; font-weight: bold; }
+        .summary-value { font-size: 11px; font-weight: bold; }
+        
+        /* Compact signature block */
+        .signature-block { display: flex; gap: 18px; margin-top: 18px; justify-content: space-between; page-break-inside: avoid; }
+        .signature-block .sig { flex: 1; text-align: center; }
+        .signature-block .sig .line { border-top: 1px solid #333; margin: 20px 10px 4px; }
+        .signature-block .sig .label { font-size: 10px; color: #333; margin-top: 2px; }
+        .signature-block .sig .sub { font-size: 9px; color: #666; margin-top: 2px; }
+
+        /* Remove transforms and avoid page-breaks inside table */
+        .dtr-container { transform: none; }
+        .dtr-table tr { page-break-inside: avoid; }
+
+        /* Avoid extra top page-breaks */
+        .dtr-container:first-of-type { page-break-before: auto; margin-top: 0; }
+    }
+    
+    .dtr-container {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 2px solid #333;
+    }
+    
+    .dtr-header {
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+    }
+    
+    .dtr-header h2 { margin: 5px 0; }
+    .dtr-header p { margin: 3px 0; font-size: 13px; }
+    
+    .dtr-student-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 6px;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+    }
+    
+    .info-item { font-size: 13px; }
+    .info-label { font-weight: bold; }
+    
+    .dtr-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    
+    .dtr-table th {
+        background: #2c3e50;
+        color: white;
+        padding: 4px 6px;
+        text-align: center;
+        font-size: 10px;
+        border: 1px solid #333;
+    }
+    
+    .dtr-table td {
+        padding: 4px 6px;
+        border: 1px solid #ddd;
+        font-size: 10px;
+        text-align: center;
+        line-height: 1;
+    }
+    
+    .dtr-table tr:nth-child(even) {
+        background: transparent;
+    }
+    
+    .dtr-table .date-cell {
+        text-align: left;
+        font-weight: 500;
+    }
+    
+    .status-present { background: #d4edda; color: #155724; font-weight: bold; }
+    .status-late { background: #fff3cd; color: #856404; font-weight: bold; }
+    .status-absent { background: #f8d7da; color: #721c24; font-weight: bold; }
+    .status-undertime { background: #e2e3e5; color: #383d41; font-weight: bold; }
+    .status-no_record { background: #f0f0f0; color: #666; }
+    
+    .dtr-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        margin-top: 12px;
+        padding: 8px;
+        background: #ecf0f1;
+        border: 1px solid #bdc3c7;
+    }
+
+    .summary-item {
+        text-align: center;
+        padding: 6px;
+        border: 1px solid #bdc3c7;
+    }
+
+    .summary-label { font-size: 9px; font-weight: bold; color: #666; }
+    .summary-value { font-size: 14px; font-weight: bold; color: #2c3e50; margin-top: 4px; }
+    
+    .dtr-actions {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    
+    .dtr-actions .btn { padding: 8px 15px; font-size: 13px; }
+
+    /* Signature block */
+    .signature-block { display: flex; gap: 18px; margin-top: 18px; justify-content: space-between; }
+    .signature-block .sig { flex: 1; text-align: center; }
+    .signature-block .sig .line { border-top: 1px solid #333; margin: 36px 10px 6px; }
+    .signature-block .sig .label { font-size: 10px; color: #333; }
+    .signature-block .sig .sub { font-size: 9px; color: #666; margin-top: 4px; }
+    @media print { .signature-block { page-break-inside: avoid; } .signature-block .sig .line { margin-top: 28px; } }
+    
+    .student-selector {
+        max-width: 1000px;
+        margin: 25px auto;
+        padding: 25px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .student-selector h3 {
+        margin-bottom: 20px;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    .student-selector form {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .student-selector .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .student-selector label {
+        display: block;
+        margin-bottom: 7px;
+        font-weight: 600;
+        color: #333;
+        font-size: 13px;
+    }
+    
+    .student-selector select,
+    .student-selector input {
+        padding: 10px 12px;
+        border: 1px solid #d0d0d0;
+        border-radius: 5px;
+        font-size: 13px;
+        background-color: white;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .student-selector select:focus,
+    .student-selector input:focus {
+        outline: none;
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+    }
+    
+    /* Select2 customization */
+    .select2-container--default .select2-selection--multiple {
+        border: 1px solid #d0d0d0 !important;
+        border-radius: 5px;
+        padding: 4px;
+        max-height: 100px !important;
+        overflow-y: auto !important;
+    }
+    
+    .select2-container--default .select2-selection--multiple:focus {
+        border-color: #2c3e50 !important;
+        box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1) !important;
+    }
+    
+    .select2-dropdown {
+        max-height: 200px !important;
+        overflow-y: auto !important;
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background: #2c3e50;
+        border-color: #2c3e50;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 3px;
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: white;
+        margin-right: 5px;
+    }
+    
+    .student-selector .form-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 3px;
+    }
+    
+    .student-selector .button-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+    
+    .student-selector button {
+        padding: 10px 16px;
+        background: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: background 0.3s, transform 0.2s;
+    }
+    
+    .student-selector button:hover {
+        background: #1a252f;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+    
+    .student-selector button:active {
+        transform: translateY(0);
+    }
+    
+    .student-selector .btn-primary {
+        background: #2c3e50;
+    }
+    
+    .student-selector .btn-secondary {
+        background: #95a5a6;
+    }
+    
+    .student-selector .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+    
+    .student-selector .btn-success {
+        background: #27ae60;
+    }
+    
+    .student-selector .btn-success:hover {
+        background: #229954;
+    }
+    
+    .student-selector .btn-warning {
+        background: #f39c12;
+    }
+    
+    .student-selector .btn-warning:hover {
+        background: #e67e22;
+    }
+    
+    .student-control-group {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        grid-column: 1 / -1;
+    }
+    
+    .student-control-group .form-group {
+        flex: 2;
+    }
+    
+    .student-control-group .select-all-btn,
+    .student-control-group .deselect-btn {
+        padding: 10px 14px;
+        background: #34495e;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        transition: background 0.3s;
+        height: fit-content;
+        align-self: flex-start;
+        margin-top: 28px;
+    }
+    
+    .student-control-group .select-all-btn:hover,
+    .student-control-group .deselect-btn:hover {
+        background: #2c3e50;
+    }
+    
+    .student-control-group .deselect-btn {
+        background: #e74c3c;
+    }
+    
+    .student-control-group .deselect-btn:hover {
+        background: #c0392b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4 no-print">
+    <div class="col-lg-12">
+        <h1 class="h2">Print Daily Time Record (DTR)</h1>
+        <p class="text-muted">Program: <strong>{{ program.name }}</strong></p>
+    </div>
+</div>
+
+<!-- Student Selector (supports multi-select for batch printing) -->
+<div class="student-selector no-print">
+    <h3><i class="bi bi-people"></i> Select Students & Period</h3>
+    <form method="get" class="w-100" id="dtrForm">
+        <div class="student-control-group">
+            <div class="form-group">
+                <label for="student_id">Select Student(s):</label>
+                <select name="student_id" id="student_id" multiple required>
+                    {% for s in all_students %}
+                        <option value="{{ s.id }}" {% if records and records|length == 1 and records.0.student.id == s.id %}selected{% endif %}>
+                            {{ s.id_number }} - {{ s.first_name }} {{ s.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text"><i class="bi bi-info-circle"></i> Type to search or click to select</div>
+            </div>
+            <button type="button" class="select-all-btn" onclick="selectAllStudents()" title="Select all students">
+                <i class="bi bi-check-all"></i> Select All
+            </button>
+            <button type="button" class="deselect-btn" onclick="deselectAllStudents()" title="Clear selection">
+                <i class="bi bi-x-circle"></i> Clear
+            </button>
+        </div>
+        <div class="form-group">
+            <label for="month">Month:</label>
+            <select name="month" id="month">
+                <option value="1" {% if month == 1 %}selected{% endif %}>January</option>
+                <option value="2" {% if month == 2 %}selected{% endif %}>February</option>
+                <option value="3" {% if month == 3 %}selected{% endif %}>March</option>
+                <option value="4" {% if month == 4 %}selected{% endif %}>April</option>
+                <option value="5" {% if month == 5 %}selected{% endif %}>May</option>
+                <option value="6" {% if month == 6 %}selected{% endif %}>June</option>
+                <option value="7" {% if month == 7 %}selected{% endif %}>July</option>
+                <option value="8" {% if month == 8 %}selected{% endif %}>August</option>
+                <option value="9" {% if month == 9 %}selected{% endif %}>September</option>
+                <option value="10" {% if month == 10 %}selected{% endif %}>October</option>
+                <option value="11" {% if month == 11 %}selected{% endif %}>November</option>
+                <option value="12" {% if month == 12 %}selected{% endif %}>December</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="year">Year:</label>
+            <select name="year" id="year">
+                <option value="2024" {% if year == 2024 %}selected{% endif %}>2024</option>
+                <option value="2025" {% if year == 2025 %}selected{% endif %}>2025</option>
+                <option value="2026" {% if year == 2026 %}selected{% endif %}>2026</option>
+                <option value="2027" {% if year == 2027 %}selected{% endif %}>2027</option>
+                <option value="2028" {% if year == 2028 %}selected{% endif %}>2028</option>
+            </select>
+        </div>
+        <div class="button-group">
+            <input type="hidden" name="action" id="actionInput" value="print">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-file-earmark-text"></i> Generate</button>
+            <button type="button" class="btn btn-secondary" onclick="submitAction('export_pdf')"><i class="bi bi-file-pdf"></i> PDF</button>
+            <button type="button" class="btn btn-success" onclick="submitAction('email')"><i class="bi bi-envelope"></i> Email</button>
+            <button type="button" class="btn btn-warning" onclick="submitAction('print')"><i class="bi bi-printer"></i> Print</button>
+        </div>
+    </form>
+</div>
+<!-- Removed prior cover page to avoid leading blank page in print -->
+
+<!-- DTR Display -->
+{% if records and records|length > 0 %}
+    {% for rec in records %}
+    <div class="dtr-container">
+    <!-- Header -->
+    <div class="dtr-header">
+        <h2>Daily Time Record (DTR)</h2>
+        <p><strong>{{ month_name }}</strong></p>
+        <p style="font-size: 12px; margin-top: 10px;">OJT Attendance System</p>
+    </div>
+    
+    <!-- Student Info -->
+    <div class="dtr-student-info">
+        <div class="info-item">
+            <span class="info-label">ID Number:</span>
+            {{ rec.student.id_number }}
+        </div>
+        <div class="info-item">
+            <span class="info-label">Student Name:</span>
+            {{ rec.student.first_name }} {{ rec.student.last_name }}
+        </div>
+        <div class="info-item">
+            <span class="info-label">Batch:</span>
+            {{ rec.student.batch.name }}
+        </div>
+        <div class="info-item">
+            <span class="info-label">Company:</span>
+            {% if rec.student.company %}
+                {{ rec.student.company.name }}
+            {% else %}
+                <span class="text-muted">Not assigned</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- DTR Table -->
+    <table class="dtr-table">
+        <thead>
+            <tr>
+                <th style="width: 20%;">Date</th>
+                <th style="width: 10%;">Day</th>
+                <th style="width: 15%;">Check-In</th>
+                <th style="width: 15%;">Check-Out</th>
+                <th style="width: 12%;">Hours</th>
+                <th style="width: 18%;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in rec.dtr_data %}
+            <tr>
+                <td class="date-cell">{{ day.date|date:"M d, Y" }}</td>
+                <td>{{ day.day|truncatewords:1 }}</td>
+                <td>
+                    {% if day.check_in %}
+                        {{ day.check_in|date:"H:i" }}
+                    {% else %}
+                        --
+                    {% endif %}
+                </td>
+                <td>
+                    {% if day.check_out %}
+                        {{ day.check_out|date:"H:i" }}
+                    {% else %}
+                        --
+                    {% endif %}
+                </td>
+                <td>
+                    {% if day.hours > 0 %}
+                        {{ day.hours }}h
+                    {% else %}
+                        --
+                    {% endif %}
+                </td>
+                <td>
+                    {% if day.status == 'present' %}
+                        <span class="status-present">
+                            Present
+                            {% if day.was_late %}<br><span style="font-size: 10px;">Late</span>{% endif %}
+                        </span>
+                    {% elif day.status == 'late' %}
+                        <span class="status-late">Late</span>
+                    {% elif day.status == 'absent' %}
+                        <span class="status-absent">Absent</span>
+                    {% elif day.status == 'undertime' %}
+                        <span class="status-undertime">Undertime</span>
+                    {% elif day.status == 'excused' %}
+                        <span class="status-excused">Excused</span>
+                    {% else %}
+                        <span class="status-no_record">No Record</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <!-- Summary -->
+    <div class="dtr-summary">
+        <div class="summary-item">
+            <div class="summary-label">Total Hours</div>
+            <div class="summary-value">{{ rec.total_hours }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Days Present</div>
+            <div class="summary-value" style="color: #27ae60;">{{ rec.total_present }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Days Late</div>
+            <div class="summary-value" style="color: #f39c12;">{{ rec.total_late }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Days Absent</div>
+            <div class="summary-value" style="color: #e74c3c;">{{ rec.total_absent }}</div>
+        </div>
+    </div>
+    
+    <!-- Signature block -->
+    <div class="signature-block">
+        <div class="sig">
+            <div class="line"></div>
+            <div class="label">Prepared by</div>
+            <div class="sub">(Name & Position)</div>
+        </div>
+        <div class="sig">
+            <div class="line"></div>
+            <div class="label">Checked by</div>
+            <div class="sub">(Supervisor / Coordinator)</div>
+        </div>
+        <div class="sig">
+            <div class="line"></div>
+            <div class="label">Approved by</div>
+            <div class="sub">(Dean / Head)</div>
+        </div>
+    </div>
+
+    <!-- Print Actions -->
+    <div class="dtr-actions no-print">
+        <button class="btn btn-primary" onclick="window.print();">
+            <i class="bi bi-printer"></i> Print DTR
+        </button>
+        <button class="btn btn-secondary" onclick="window.history.back();">
+            <i class="bi bi-arrow-left"></i> Go Back
+        </button>
+    </div>
+</div>
+    {% if not forloop.last %}
+        <div style="page-break-after: always;"></div>
+    {% endif %}
+    {% endfor %}
+{% elif records is not defined or records|length == 0 %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No attendance records found for the selected students in {{ month_name }}.
+    </div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+// Build a GET URL with repeated student_id params and redirect
+function submitAction(action) {
+    const studentSelect = $('#student_id');
+    const selectedValues = studentSelect.val();
+
+    // Check if students are selected
+    if (!selectedValues || selectedValues.length === 0) {
+        alert('Please select at least one student!');
+        return false;
+    }
+
+    // Collect other params
+    const month = encodeURIComponent(document.getElementById('month').value);
+    const year = encodeURIComponent(document.getElementById('year').value);
+    const basePath = window.location.pathname; // current path
+
+    // Build query string with repeated student_id
+    const params = [];
+    selectedValues.forEach(function(v) { params.push('student_id=' + encodeURIComponent(v)); });
+    params.push('month=' + month);
+    params.push('year=' + year);
+    if (action) params.push('action=' + encodeURIComponent(action));
+
+    const query = params.join('&');
+    // Redirect to the constructed URL
+    window.location.href = basePath + '?' + query;
+    return false;
+}
+
+// Initialize Select2 for student selection
+$(document).ready(function() {
+    $('#student_id').select2({
+        placeholder: 'Search and select students...',
+        allowClear: true,
+        width: '100%',
+        closeOnSelect: false,
+        tokenSeparators: [','],
+        templateResult: formatOption,
+        templateSelection: formatSelection
+    });
+});
+
+function selectAllStudents() {
+    // Select all options in underlying select and update Select2
+    $('#student_id option').prop('selected', true);
+    $('#student_id').trigger('change');
+}
+
+function deselectAllStudents() {
+    $('#student_id').val(null).trigger('change');
+}
+
+function formatOption(option) {
+    if (!option.id) return option.text;
+    return $('<span>' + option.text + '</span>');
+}
+
+function formatSelection(option) {
+    if (!option.id) return option.text;
+    return option.text;
+}
+</script>
+
+{% if action == 'print' and records %}
+<script>
+// Auto-trigger browser print when action=print and there are records
+document.addEventListener('DOMContentLoaded', function() {
+    // short delay to ensure DTR content is rendered
+    setTimeout(function() { window.print(); }, 600);
+});
+</script>
+{% endif %}
+
+{% endblock %}

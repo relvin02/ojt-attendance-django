@@ -1,0 +1,205 @@
+{% extends "attendance/base.html" %}
+
+{% block title %}Add Student - {{ program.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="mb-3">
+            <div>
+                <h1 class="h2">Add New Student</h1>
+                <p class="text-muted">Program: <strong>{{ program.name }}</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Student Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Batch Selection -->
+                    <div class="mb-3">
+                        <label for="id_batch" class="form-label">Batch <span class="text-danger">*</span></label>
+                        <select name="batch" id="id_batch" class="form-select" required>
+                            <option value="">-- Select Batch --</option>
+                            {% for batch in batches %}
+                                <option value="{{ batch.id }}">{{ batch.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Only batches from {{ program.name }} are shown</small>
+                    </div>
+
+                    <!-- ID Number -->
+                    <div class="mb-3">
+                        <label for="id_id_number" class="form-label">ID Number <span class="text-danger">*</span></label>
+                        {{ form.id_number }}
+                        {% if form.id_number.errors %}
+                            <div class="text-danger">{{ form.id_number.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <!-- First Name -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger">{{ form.first_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Last Name -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger">{{ form.last_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_email" class="form-label">Email <span class="text-danger">*</span></label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Phone -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_phone" class="form-label">Phone <span class="text-danger">*</span></label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger">{{ form.phone.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Emergency Contact -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_emergency_contact_name" class="form-label">Emergency Contact Name</label>
+                                {{ form.emergency_contact_name }}
+                                {% if form.emergency_contact_name.errors %}
+                                    <div class="text-danger">{{ form.emergency_contact_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_emergency_contact_number" class="form-label">Emergency Contact Number</label>
+                                {{ form.emergency_contact_number }}
+                                {% if form.emergency_contact_number.errors %}
+                                    <div class="text-danger">{{ form.emergency_contact_number.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Gender -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <div class="text-danger">{{ form.gender.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Date of Birth -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_date_of_birth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                    <div class="text-danger">{{ form.date_of_birth.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="mb-3">
+                        <label for="id_address" class="form-label">Address <span class="text-danger">*</span></label>
+                        {{ form.address }}
+                        {% if form.address.errors %}
+                            <div class="text-danger">{{ form.address.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Company Assignment (Optional) -->
+                    <div class="mb-3">
+                        <label for="id_company" class="form-label">Assign Company (Optional)</label>
+                        {{ form.company }}
+                        <small class="text-muted d-block mt-1">If assigned, the student will automatically use this company during check-in/out without selecting it manually.</small>
+                        {% if form.company.errors %}
+                            <div class="text-danger">{{ form.company.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Profile Image -->
+                    <div class="mb-3">
+                        <label for="id_profile_image" class="form-label">Profile Image (Optional)</label>
+                        {{ form.profile_image }}
+                        {% if form.profile_image.errors %}
+                            <div class="text-danger">{{ form.profile_image.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Add Student
+                        </button>
+                        <a href="{% url 'academic_staff_manage_students' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Information</h6>
+            </div>
+            <div class="card-body">
+                <p class="small">
+                    <strong>Note:</strong> A user account will be automatically created for the student using their ID Number as both username and initial password.
+                </p>
+                <p class="small">
+                    <strong>Program:</strong> {{ program.name }}
+                </p>
+                <p class="small">
+                    <strong>Batch:</strong> Will be selected from batches in {{ program.name }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 0.25rem;
+    }
+    .text-danger {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}

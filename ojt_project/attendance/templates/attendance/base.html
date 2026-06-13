@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OJT Attendance System{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --sidebar-bg: #1a3a52;
+            --sidebar-text: #e0e6ed;
+            --sidebar-hover: #264b6b;
+            --sidebar-active: #d4af37;
+            --sidebar-active-light: #2a4d6f;
+            --icon-color: #9da8b8;
+            --icon-color-hover: #d4af37;
+            --primary-dark: #1a3a52;
+            --primary-gold: #d4af37;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            background-color: #ffffff;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            padding: 0;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.25);
+            border-right: 1px solid #0f2437;
+        }
+        
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #4a6b88;
+            border-radius: 3px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #5d7f9d;
+        }
+        
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 2px solid #d4af37;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+        
+        .sidebar-header a {
+            color: #d4af37;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: color 0.2s;
+            letter-spacing: -0.5px;
+        }
+        
+        .sidebar-header a:hover {
+            color: #e6c158;
+        }
+        
+        .sidebar-header i {
+            font-size: 1.5rem;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 1.5rem 0;
+            list-style: none;
+            margin: 0;
+        }
+        
+        .sidebar-nav .nav-item {
+            margin: 0.25rem 0;
+            padding: 0 0.75rem;
+        }
+        
+        .sidebar-nav .nav-link {
+            color: var(--sidebar-text);
+            text-decoration: none;
+            padding: 0.85rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        
+        .sidebar-nav .nav-link i {
+            font-size: 1.1rem;
+            color: var(--icon-color);
+            transition: color 0.25s;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .sidebar-nav .nav-link:hover {
+            background-color: var(--sidebar-hover);
+            color: #d4af37;
+        }
+        
+        .sidebar-nav .nav-link:hover i {
+            color: #d4af37;
+        }
+        
+        .sidebar-nav .nav-link.active {
+            background-color: var(--sidebar-active-light);
+            color: #d4af37;
+            font-weight: 600;
+        }
+        
+        .sidebar-nav .nav-link.active i {
+            color: #d4af37;
+        }
+        
+        .sidebar-nav .dropdown-menu {
+            background-color: transparent;
+            border: none;
+            padding: 0.5rem 0 0.5rem 0;
+            margin: 0;
+            position: static;
+            display: none;
+            flex-direction: column;
+            box-shadow: none;
+        }
+        
+        .sidebar-nav .dropdown-menu.show {
+            display: flex;
+        }
+        
+        .sidebar-nav .dropdown-menu .dropdown-item {
+            color: var(--sidebar-text);
+            padding: 0.65rem 1rem 0.65rem 3.2rem;
+            border: none;
+            background: none;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.25s;
+            border-radius: 6px;
+            margin: 0 0.75rem;
+        }
+        
+        .sidebar-nav .dropdown-menu .dropdown-item:hover {
+            background-color: var(--sidebar-hover);
+            color: #d4af37;
+        }
+        
+        .sidebar-footer {
+            border-top: 2px solid #d4af37;
+            padding: 1rem 0.75rem;
+            margin-top: auto;
+        }
+        
+        .sidebar-footer .nav-link {
+            color: var(--sidebar-text);
+            padding: 0.85rem 1rem;
+            border-radius: 8px;
+            transition: all 0.25s;
+        }
+        
+        .sidebar-footer .nav-link:hover {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .sidebar-footer .nav-link i {
+            color: #dc2626;
+        }
+        
+        .sidebar-mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--sidebar-text);
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 1.25rem;
+            transition: color 0.25s;
+        }
+        
+        .sidebar-mobile-toggle:hover {
+            color: #d4af37;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #1a3a52 0%, #0f2437 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 3px solid #d4af37;
+            box-shadow: 0 2px 8px rgba(26, 58, 82, 0.15);
+        }
+        
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #d4af37;
+        }
+        
+        .page-header p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .content-wrapper {
+            margin-left: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #ffffff;
+        }
+        
+        body.authenticated .content-wrapper {
+            margin-left: 280px;
+        }
+        
+        main {
+            flex: 1 0 auto;
+        }
+        
+        footer {
+            flex-shrink: 0;
+            background-color: #1a3a52;
+            border-top: 2px solid #d4af37;
+            color: #e0e6ed;
+        }
+        
+        footer p {
+            margin: 0;
+            color: #e0e6ed;
+        }
+        
+        .sidebar-mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #d4af37;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.2s;
+        }
+        
+        .sidebar-mobile-toggle:hover {
+            color: #e6c158;
+        }
+        
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 1rem 1.25rem;                border-bottom: 2px solid #d4af37;            }
+            
+            .page-header h1 {
+                font-size: 1rem;
+            }
+            
+            .page-header p {
+                font-size: 0.75rem;
+            }
+            
+            .sidebar-mobile-toggle {
+                display: block !important;
+                background: none;
+                border: none;
+                color: #d4af37;
+                font-size: 1.25rem;
+                cursor: pointer;
+                padding: 0.5rem;
+                transition: color 0.2s;
+                z-index: 1001;
+                flex-shrink: 0;
+            }
+            
+            .sidebar-mobile-toggle:hover {
+                color: #e6c158;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                align-items: stretch;
+                padding: 0;
+                box-shadow: 0 2px 8px rgba(26, 58, 82, 0.15);
+                border-bottom: 2px solid #d4af37;
+                z-index: 1000;
+                max-height: 100vh;
+                overflow-y: auto;
+                transition: max-height 0.3s ease;
+            }
+            
+            .sidebar.collapsed {
+                max-height: 60px;
+                overflow: hidden;
+            }
+            
+            .sidebar.collapsed .sidebar-nav,
+            .sidebar.collapsed .sidebar-footer {
+                display: none;
+            }
+            
+            .sidebar-header {
+                width: 100%;
+                padding: 1rem;
+                border-bottom: 2px solid #d4af37;
+                border-right: none;
+                flex-shrink: 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .sidebar-header a {
+                font-size: 1rem;
+            }
+            
+            .sidebar-header i {
+                font-size: 1.25rem;
+            }
+            
+            .sidebar-nav {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                padding: 0.5rem 0;
+                overflow: visible;
+                margin: 0;
+            }
+            
+            .sidebar-nav .nav-item {
+                width: 100%;
+                flex-shrink: 0;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .sidebar-nav .nav-link {
+                width: 100%;
+                padding: 0.85rem 1.5rem;
+                border-radius: 0;
+                margin: 0;
+                font-size: 0.95rem;
+                border-bottom: none;
+                border-left: 3px solid transparent;
+            }
+            
+            .sidebar-nav .nav-link:hover {
+                background-color: #264b6b;
+                border-left-color: #d4af37;
+            }
+            
+            .sidebar-nav .nav-link.active {
+                background-color: #2a4d6f;
+                border-left-color: #d4af37;
+            }
+            
+            .sidebar-nav .dropdown-menu {
+                position: static;
+                top: auto;
+                left: auto;
+                background-color: transparent;
+                border: none;
+                box-shadow: none;
+                margin-top: 0;
+            }
+            
+            .sidebar-nav .dropdown-menu .dropdown-item {
+                border-radius: 0;
+                margin: 0;
+                padding: 0.65rem 1.5rem 0.65rem 3rem;
+                color: #9da8b8;
+                border-left: 2px solid transparent;
+                border-bottom: none;
+                font-size: 0.9rem;
+            }
+            
+            .sidebar-nav .dropdown-menu .dropdown-item:hover {
+                background-color: #264b6b;
+                color: #d4af37;
+                border-left-color: #d4af37;
+            }
+            
+            .sidebar-footer {
+                width: 100%;
+                border-top: 2px solid #d4af37;
+                border-left: none;
+                padding: 1rem 0.75rem;
+            }
+            
+            .sidebar-footer .nav-link {
+                width: 100%;
+                padding: 0.85rem 1.5rem;
+                border-radius: 0;
+                border-left: 3px solid transparent;
+            }
+            
+            .sidebar-footer .nav-link:hover {
+                border-left-color: #dc2626;
+                background-color: transparent;
+            }
+            
+            .content-wrapper {
+                margin-left: 0 !important;
+                margin-top: 0;
+                padding-top: 0;
+            }
+            
+            body.authenticated .content-wrapper {
+                padding-top: 60px;
+                margin-left: 0 !important;
+            }
+            
+            body.authenticated .page-header {
+                margin-top: 0;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body{% if user.is_authenticated %} class="authenticated"{% endif %}>
+    {% if user.is_authenticated %}
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="{% url 'index' %}">
+                <i class="bi bi-calendar-check"></i>
+                <span>OJT System</span>
+            </a>
+            <button class="sidebar-mobile-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <ul class="sidebar-nav">
+            {% if user.is_staff %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'manage_students' %}">
+                    <i class="bi bi-people"></i>
+                    <span>Students</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'manage_companies' %}">
+                    <i class="bi bi-building"></i>
+                    <span>Companies</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'approve_leave' %}">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Absence Requests</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'reports' %}">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'manage_programs' %}">
+                    <i class="bi bi-bookmark"></i>
+                    <span>Programs</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'manage_batches' %}">
+                    <i class="bi bi-collection"></i>
+                    <span>Batches</span>
+                </a>
+            </li>
+            
+            {% elif user.academic_staff %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'academic_staff_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'academic_staff_manage_students' %}">
+                    <i class="bi bi-people"></i>
+                    <span>My Students</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'academic_staff_manage_attendance' %}">
+                    <i class="bi bi-clock"></i>
+                    <span>Attendance & Locations</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'academic_staff_print_dtr' %}">
+                    <i class="bi bi-printer"></i>
+                    <span>Print DTR</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'academic_student_documents' %}">
+                    <i class="bi bi-file-earmark-check"></i>
+                    <span>Review Submissions</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'academic_staff_reports' %}">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+            
+            {% elif user.supervisor_profile %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'supervisor_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'manage_attendance' %}">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'approve_leave' %}">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <span>Absence Requests</span>
+                </a>
+            </li>
+            
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'student_dashboard' %}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'student_profile' %}">
+                    <i class="bi bi-person-circle"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'check_in_out' %}">
+                    <i class="bi bi-camera"></i>
+                    <span>Check In/Out</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'student_documents' %}">
+                    <i class="bi bi-file-earmark"></i>
+                    <span>Documents</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'attendance_history' %}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Attendance</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'request_leave' %}">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Report Absence</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+        
+        <div class="sidebar-footer">
+            <a class="nav-link" href="{% url 'logout' %}">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h1>Siargao Island Institute of Technology</h1>
+        </div>
+
+        <main>
+            <div class="container-fluid mt-5">
+                {% block page_messages %}
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                {% endblock %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
+        <footer class="mt-5 py-4">
+            <div class="container text-center">
+                <p>&copy; 2026 OJT Attendance System. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Sidebar mobile toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const navLinks = document.querySelectorAll('.sidebar-nav .nav-link, .sidebar-footer .nav-link');
+            
+            // Toggle sidebar on button click
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    sidebar.classList.toggle('collapsed');
+                    // Update icon
+                    const icon = sidebarToggle.querySelector('i');
+                    if (sidebar.classList.contains('collapsed')) {
+                        icon.className = 'bi bi-list';
+                    } else {
+                        icon.className = 'bi bi-x-lg';
+                    }
+                });
+            }
+            
+            // Close sidebar when clicking a nav link on mobile
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        if (sidebar && sidebarToggle) {
+                            sidebar.classList.add('collapsed');
+                            const icon = sidebarToggle.querySelector('i');
+                            icon.className = 'bi bi-list';
+                        }
+                    }
+                });
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    // Desktop: always expand sidebar
+                    if (sidebar) {
+                        sidebar.classList.remove('collapsed');
+                    }
+                    if (sidebarToggle) {
+                        const icon = sidebarToggle.querySelector('i');
+                        icon.className = 'bi bi-x-lg';
+                    }
+                } else {
+                    // Mobile: collapse sidebar by default
+                    if (sidebar && !sidebar.classList.contains('collapsed')) {
+                        sidebar.classList.add('collapsed');
+                    }
+                    if (sidebarToggle) {
+                        const icon = sidebarToggle.querySelector('i');
+                        icon.className = 'bi bi-list';
+                    }
+                }
+            });
+            
+            // Initial check for mobile
+            if (window.innerWidth <= 768) {
+                if (sidebar) {
+                    sidebar.classList.add('collapsed');
+                }
+                if (sidebarToggle) {
+                    const icon = sidebarToggle.querySelector('i');
+                    icon.className = 'bi bi-list';
+                }
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

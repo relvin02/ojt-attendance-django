@@ -1,0 +1,4 @@
+id_number,first_name,last_name,email,phone,gender,date_of_birth,address,company,batch
+2023001,Juan,Dela Cruz,juan.delacruz@example.com,09171234567,M,2002-05-15,"123 Main St, Manila",ACME Corp,Batch 1
+2023002,Maria,Santos,maria.santos@example.com,09179876543,F,2001-08-20,"456 Rizal Ave, Manila",,Batch 1
+2023003,Robert,Johnson,robert.j@example.com,09181234567,M,2003-01-10,"789 Mabini St, Makati",,Batch 1

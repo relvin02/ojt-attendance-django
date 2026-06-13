@@ -1,0 +1,202 @@
+{% extends 'attendance/base.html' %}
+{% load static %}
+
+{% block title %}Edit Student Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit"></i> Edit Student Profile
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Student Summary -->
+                    <div class="alert alert-info mb-4" role="alert">
+                        <strong>Student:</strong> {{ student.first_name }} {{ student.last_name }} (ID: {{ student.id_number }})
+                        <br>
+                        <strong>Program:</strong> {{ student.batch.program.name }} | <strong>Batch:</strong> {{ student.batch.name }}
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="row mb-4">
+                            <div class="col-12 text-center">
+                                {% if student.profile_image %}
+                                    <img src="{{ student.profile_image.url }}" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                                        <i class="fas fa-user fa-3x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="mt-3">
+                                    <label for="{{ form.profile_image.id_for_label }}" class="form-label">
+                                        <i class="fas fa-camera"></i> Update Profile Picture
+                                    </label>
+                                    {{ form.profile_image }}
+                                    {% if form.profile_image.errors %}
+                                        <small class="text-danger">{{ form.profile_image.errors }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Information Section -->
+                        <div class="row mb-3">
+                            <h6 class="mb-3 text-secondary">
+                                <i class="fas fa-info-circle"></i> Personal Information
+                            </h6>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.id_number.id_for_label }}" class="form-label">ID Number</label>
+                                {{ form.id_number }}
+                                {% if form.id_number.errors %}
+                                    <small class="text-danger">{{ form.id_number.errors }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <small class="text-danger">{{ form.email.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Names Section -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <small class="text-danger">{{ form.first_name.errors }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <small class="text-danger">{{ form.last_name.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Contact Information Section -->
+                        <div class="row mb-3">
+                            <h6 class="mb-3 text-secondary">
+                                <i class="fas fa-phone"></i> Contact Information
+                            </h6>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <small class="text-danger">{{ form.phone.errors }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">Emergency Contact Name</label>
+                                {{ form.emergency_contact_name }}
+                                {% if form.emergency_contact_name.errors %}
+                                    <small class="text-danger">{{ form.emergency_contact_name.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact_number.id_for_label }}" class="form-label">Emergency Contact Number</label>
+                                {{ form.emergency_contact_number }}
+                                {% if form.emergency_contact_number.errors %}
+                                    <small class="text-danger">{{ form.emergency_contact_number.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Gender Section -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <small class="text-danger">{{ form.gender.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- More Details Section -->
+                        <div class="row mb-3">
+                            <h6 class="mb-3 text-secondary">
+                                <i class="fas fa-calendar"></i> Additional Information
+                            </h6>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                    <small class="text-danger">{{ form.date_of_birth.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Address Section -->
+                        <div class="mb-3">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <small class="text-danger">{{ form.address.errors }}</small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Company Assignment Section -->
+                        <div class="mb-3">
+                            <label for="{{ form.company.id_for_label }}" class="form-label">Assign Company (Optional)</label>
+                            {{ form.company }}
+                            <small class="text-muted d-block mt-1">If assigned, the student will automatically use this company during check-in/out without selecting it manually.</small>
+                            {% if form.company.errors %}
+                                <small class="text-danger">{{ form.company.errors }}</small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a href="{% url 'academic_staff_manage_students' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Students
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-color: #e3e6f0;
+        border-radius: 0.35rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+{% endblock %}

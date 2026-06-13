@@ -1,0 +1,70 @@
+{% extends "attendance/base.html" %}
+
+{% block title %}Absence History{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <h1 class="h2">Absence Requests</h1>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-lg-12">
+        <a href="{% url 'request_leave' %}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Report New Absence
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if leave_requests %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>From</th>
+                        <th>To</th>
+                            <th>Reason</th>
+                            <th>Proof</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leave_requests %}
+                    <tr>
+                        <td>{{ leave.start_date }}</td>
+                        <td>{{ leave.end_date }}</td>
+                            <td>{{ leave.reason }}</td>
+                            <td>
+                                {% if leave.proof_image %}
+                                <a href="{{ leave.proof_image.url }}" target="_blank">
+                                    <img src="{{ leave.proof_image.url }}" alt="proof" style="height:40px; object-fit:cover; border-radius:4px;">
+                                </a>
+                                {% else %}
+                                -
+                                {% endif %}
+                            </td>
+                        <td>
+                            {% if leave.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif leave.status == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% else %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ leave.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center py-4">No absence requests yet</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

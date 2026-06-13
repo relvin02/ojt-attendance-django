@@ -1,0 +1,114 @@
+{% extends "attendance/base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <h1 class="h2">Attendance Reports</h1>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" 
+                       value="{{ form.start_date.value|default:'' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" 
+                       value="{{ form.end_date.value|default:'' }}">
+            </div>
+            <div class="col-md-4">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-title">Total Records</h6>
+                <p class="display-5">{{ stats.total_records }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-title">Present</h6>
+                <p class="display-5 text-success">{{ stats.present }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-title">Late</h6>
+                <p class="display-5 text-warning">{{ stats.late }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h6 class="card-title">Absent</h6>
+                <p class="display-5 text-danger">{{ stats.absent }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if attendances %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Company</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in attendances %}
+                    <tr>
+                        <td>{{ att.student.id_number }}</td>
+                        <td>{{ att.company.name }}</td>
+                        <td>{{ att.date }}</td>
+                        <td>
+                            {% if att.status == 'present' %}
+                                <span class="badge bg-success">Present</span>
+                            {% elif att.status == 'late' %}
+                                <span class="badge bg-warning">Late</span>
+                            {% elif att.status == 'undertime' %}
+                                <span class="badge bg-secondary">Undertime</span>
+                            {% elif att.status == 'absent' %}
+                                <span class="badge bg-danger">Absent</span>
+                            {% elif att.status == 'excused' %}
+                                <span class="badge bg-info">Excused</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">{{ att.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ att.get_hours_worked|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center py-4">No records found</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

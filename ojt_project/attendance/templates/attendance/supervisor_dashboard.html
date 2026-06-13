@@ -1,0 +1,351 @@
+{% extends "attendance/base.html" %}
+
+{% block title %}Supervisor Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--stat-color), transparent);
+    }
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 10px 0;
+    }
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    .stat-icon {
+        font-size: 2rem;
+        opacity: 0.2;
+        position: absolute;
+        right: 15px;
+        top: 15px;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+    .card-header-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px 10px 0 0;
+        padding: 20px;
+    }
+    .card-header-custom h5 {
+        margin: 0;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<!-- Header -->
+<div class="row mb-5">
+    <div class="col-lg-12">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 class="h2 fw-bold">Supervisor Dashboard</h1>
+                <p class="text-muted">Company: <strong>{{ company.name }}</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row mb-5">
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card stat-card" style="--stat-color: #667eea;">
+            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="stat-label">Total Students</div>
+            <div class="stat-value text-primary">{{ total_students }}</div>
+            <small class="text-muted">Under supervision</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card stat-card" style="--stat-color: #43e97b;">
+            <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="stat-label">Present Today</div>
+            <div class="stat-value text-success">{{ present_today }}</div>
+            <small class="text-muted">Checked in</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card stat-card" style="--stat-color: #dc3545;">
+            <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
+            <div class="stat-label">Absent Today</div>
+            <div class="stat-value text-danger">{{ absent_today }}</div>
+            <small class="text-muted">Not present</small>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3 mb-3">
+        <div class="card stat-card" style="--stat-color: #ffc107;">
+            <div class="stat-icon"><i class="bi bi-clock-fill"></i></div>
+            <div class="stat-label">Late Today</div>
+            <div class="stat-value text-warning">{{ late_today }}</div>
+            <small class="text-muted">Arrived late</small>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mb-5">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header-custom">
+                <i class="bi bi-graph-up me-2"></i><h5>Attendance Trends (Last 8 Days)</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="chart-container">
+                    <canvas id="weeklyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header-custom">
+                <i class="bi bi-pie-chart me-2"></i><h5>Status Distribution (30 Days)</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<div class="row mb-5">
+    <div class="col-lg-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header-custom">
+                <i class="bi bi-table me-2"></i><h5>Attendance Statistics (Last 30 Days)</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row text-center">
+                    <div class="col-md-2">
+                        <div style="padding: 15px; background: #e7f1ff; border-radius: 8px;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #667eea;">{{ attendance_stats.present }}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem; margin-top: 5px;">Present</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="padding: 15px; background: #fff3e0; border-radius: 8px;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #ff9800;">{{ attendance_stats.late }}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem; margin-top: 5px;">Late</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="padding: 15px; background: #f3e5f5; border-radius: 8px;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #9c27b0;">{{ attendance_stats.undertime }}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem; margin-top: 5px;">Undertime</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="padding: 15px; background: #ffebee; border-radius: 8px;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #f44336;">{{ attendance_stats.absent }}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem; margin-top: 5px;">Absent</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="padding: 15px; background: #e0f2f1; border-radius: 8px;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #009688;">{{ attendance_stats.excused }}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem; margin-top: 5px;">Excused</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="padding: 15px; background: #fce4ec; border-radius: 8px;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: #e91e63;">{{ pending_leave_requests.count }}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem; margin-top: 5px;">Pending</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Attendance Table -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header-custom">
+                <i class="bi bi-calendar-check me-2"></i><h5>Today's Attendance Summary</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if today_attendances %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead style="background-color: #f8f9fa;">
+                            <tr>
+                                <th style="border: none;">Student ID</th>
+                                <th style="border: none;">Check In</th>
+                                <th style="border: none;">Check Out</th>
+                                <th style="border: none;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for att in today_attendances %}
+                            <tr>
+                                <td>{{ att.student.id_number }}</td>
+                                <td>{% if att.check_in_time %}<strong>{{ att.check_in_time|date:"H:i" }}</strong>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                                <td>{% if att.check_out_time %}<strong>{{ att.check_out_time|date:"H:i" }}</strong>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                                <td>
+                                    {% if att.status == 'present' %}
+                                        <span class="badge" style="background-color: #28a745;">Present</span>
+                                        {% if att.was_late %}
+                                            <span class="badge" style="background-color: #ffc107; color: #000; margin-left: 5px;">Late</span>
+                                        {% endif %}
+                                    {% elif att.status == 'late' %}
+                                        <span class="badge" style="background-color: #ffc107; color: #000;">Late</span>
+                                    {% elif att.status == 'undertime' %}
+                                        <span class="badge" style="background-color: #6c757d;">Undertime</span>
+                                    {% elif att.status == 'absent' %}
+                                        <span class="badge" style="background-color: #dc3545;">Absent</span>
+                                    {% elif att.status == 'excused' %}
+                                        <span class="badge" style="background-color: #17a2b8;">Excused</span>
+                                    {% else %}
+                                        <span class="badge" style="background-color: #e9ecef; color: #000;">{{ att.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox" style="font-size: 2rem; color: #ccc;"></i>
+                    <p class="text-muted mt-2">No attendance records for today</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Weekly Chart
+        const weeklyData = {{ weekly_data|safe }};
+        const weeklyElement = document.getElementById('weeklyChart');
+        if (weeklyElement) {
+            const weeklyCtx = weeklyElement.getContext('2d');
+            new Chart(weeklyCtx, {
+        type: 'line',
+        data: {
+            labels: weeklyData.map(d => d.date),
+            datasets: [{
+                label: 'Present Students',
+                data: weeklyData.map(d => d.count),
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            }
+        }
+            });
+        }
+
+        // Status Chart
+        const statusElement = document.getElementById('statusChart');
+        if (statusElement) {
+            const statusCtx = statusElement.getContext('2d');
+    const statusData = {
+        present: {{ attendance_stats.present }},
+        late: {{ attendance_stats.late }},
+        absent: {{ attendance_stats.absent }},
+        excused: {{ attendance_stats.excused }},
+        undertime: {{ attendance_stats.undertime }}
+    };
+    
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Present', 'Late', 'Absent', 'Excused', 'Undertime'],
+            datasets: [{
+                data: [
+                    statusData.present,
+                    statusData.late,
+                    statusData.absent,
+                    statusData.excused,
+                    statusData.undertime
+                ],
+                backgroundColor: [
+                    '#28a745',
+                    '#ffc107',
+                    '#dc3545',
+                    '#17a2b8',
+                    '#6c757d'
+                ],
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+            });
+        }
+    });
+</script>
+{% endblock %}

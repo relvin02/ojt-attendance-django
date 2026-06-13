@@ -1,0 +1,51 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}My Documents{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <h2>Upload Document</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.title.label_tag }}
+                {{ form.title }}
+            </div>
+            <div class="mb-3">
+                {{ form.file.label_tag }}
+                {{ form.file }}
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    </div>
+</div>
+<hr />
+<div class="row">
+    <div class="col-lg-12">
+        <h2>Your Documents</h2>
+        {% if documents %}
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>File</th>
+                        <th>Uploaded At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documents %}
+                    <tr>
+                        <td>{{ doc.title }}</td>
+                        <td><a href="{{ doc.file.url }}" target="_blank">Download</a></td>
+                        <td>{{ doc.uploaded_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-muted">You have not uploaded any documents yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

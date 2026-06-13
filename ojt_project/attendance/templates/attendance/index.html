@@ -1,0 +1,52 @@
+{% extends "attendance/base.html" %}
+
+{% block title %}Home - OJT Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="jumbotron">
+            <h1 class="display-4">Welcome to OJT Attendance System</h1>
+            <p class="lead">A comprehensive system for managing on-the-job training attendance with face recognition and GPS tracking.</p>
+            <hr class="my-4">
+            {% if user.is_authenticated %}
+            <p>Welcome, {{ user.username }}!</p>
+            <a class="btn btn-primary btn-lg" href="{% url 'student_dashboard' %}" role="button">Go to Dashboard</a>
+            {% else %}
+            <p>Please log in to access the system.</p>
+            <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button">Login</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-camera-fill" style="font-size: 2rem; color: #007bff;"></i>
+                <h5 class="card-title mt-3">Face Recognition</h5>
+                <p class="card-text">Secure attendance marking with facial recognition technology.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-geo-alt-fill" style="font-size: 2rem; color: #28a745;"></i>
+                <h5 class="card-title mt-3">GPS Tracking</h5>
+                <p class="card-text">Location-based attendance verification with GPS coordinates.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up-fill" style="font-size: 2rem; color: #ffc107;"></i>
+                <h5 class="card-title mt-3">Reports</h5>
+                <p class="card-text">Comprehensive attendance reports and analytics.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

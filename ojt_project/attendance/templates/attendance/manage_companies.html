@@ -1,0 +1,42 @@
+{% extends "attendance/base.html" %}
+
+{% block title %}Manage Companies{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <h1 class="h2">Manage Companies</h1>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if companies %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Company Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                    <tr>
+                        <td>{{ company.name }}</td>
+                        <td>{{ company.phone }}</td>
+                        <td>{{ company.email }}</td>
+                        <td>{{ company.latitude|floatformat:4 }}, {{ company.longitude|floatformat:4 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center py-4">No companies found</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

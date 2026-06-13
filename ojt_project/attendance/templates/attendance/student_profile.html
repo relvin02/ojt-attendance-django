@@ -1,0 +1,351 @@
+{% extends 'attendance/base.html' %}
+{% load static %}
+
+{% block title %}Student Profile{% endblock %}
+
+{% block page_messages %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle"></i> My Profile
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="row mb-4">
+                            <div class="col-12 text-center">
+                                {% if student.profile_image %}
+                                    <img src="{{ student.profile_image.url }}" alt="Profile Picture" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                                        <i class="fas fa-user fa-3x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="mt-3">
+                                    <label for="{{ form.profile_image.id_for_label }}" class="form-label">
+                                        <i class="fas fa-camera"></i> Update Profile Picture
+                                    </label>
+                                    {{ form.profile_image }}
+                                    {% if form.profile_image.errors %}
+                                        <small class="text-danger">{{ form.profile_image.errors }}</small>
+                                    {% endif %}
+                                    <div class="image-action-row mt-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm image-action-btn" id="openGalleryBtn">
+                                            <i class="fas fa-images"></i> Gallery
+                                        </button>
+                                        <button type="button" class="btn btn-primary btn-sm image-action-btn" id="openCameraDirectBtn">
+                                            <i class="fas fa-camera"></i> Camera
+                                        </button>
+                                        <input type="file" id="cameraCaptureInput" accept="image/*" capture="user" class="d-none">
+                                    </div>
+                                    <small class="text-muted d-block mt-2" id="selectedImageName">No image selected yet.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Information Section -->
+                        <div class="row mb-3">
+                            <h6 class="mb-3 text-secondary">
+                                <i class="fas fa-info-circle"></i> Personal Information
+                            </h6>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.id_number.id_for_label }}" class="form-label">ID Number</label>
+                                {{ form.id_number }}
+                                {% if form.id_number.errors %}
+                                    <small class="text-danger">{{ form.id_number.errors }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <small class="text-danger">{{ form.email.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Names Section -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <small class="text-danger">{{ form.first_name.errors }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <small class="text-danger">{{ form.last_name.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Contact Information Section -->
+                        <div class="row mb-3">
+                            <h6 class="mb-3 text-secondary">
+                                <i class="fas fa-phone"></i> Contact Information
+                            </h6>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <small class="text-danger">{{ form.phone.errors }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact_name.id_for_label }}" class="form-label">Emergency Contact Name</label>
+                                {{ form.emergency_contact_name }}
+                                {% if form.emergency_contact_name.errors %}
+                                    <small class="text-danger">{{ form.emergency_contact_name.errors }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact_number.id_for_label }}" class="form-label">Emergency Contact Number</label>
+                                {{ form.emergency_contact_number }}
+                                {% if form.emergency_contact_number.errors %}
+                                    <small class="text-danger">{{ form.emergency_contact_number.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Gender Section -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <small class="text-danger">{{ form.gender.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- More Details Section -->
+                        <div class="row mb-3">
+                            <h6 class="mb-3 text-secondary">
+                                <i class="fas fa-calendar"></i> Additional Information
+                            </h6>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                    <small class="text-danger">{{ form.date_of_birth.errors }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Address Section -->
+                        <div class="mb-3">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <small class="text-danger">{{ form.address.errors }}</small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Batch Information (Read-only) -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">Program</label>
+                                <p class="form-control-plaintext fw-bold">{{ student.batch.program.name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">Batch</label>
+                                <p class="form-control-plaintext fw-bold">{{ student.batch.name }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-color: #e3e6f0;
+        border-radius: 0.35rem;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .form-control-plaintext {
+        padding: 0.375rem 0;
+        border-bottom: 2px solid #e3e6f0;
+    }
+
+    #id_profile_image {
+        display: none;
+    }
+
+    .image-action-row {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .image-action-btn {
+        min-width: 120px;
+        border-radius: 999px;
+        padding: 0.4rem 0.9rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const profileForm = document.querySelector('form[enctype="multipart/form-data"]');
+    const mainImageInput = document.getElementById('id_profile_image');
+    const openGalleryBtn = document.getElementById('openGalleryBtn');
+    const openCameraBtn = document.getElementById('openCameraDirectBtn');
+    const cameraCaptureInput = document.getElementById('cameraCaptureInput');
+    const selectedImageName = document.getElementById('selectedImageName');
+    const saveButton = document.querySelector('button[type="submit"]');
+    let isSubmitting = false;
+
+    if (!profileForm || !mainImageInput || !openGalleryBtn || !openCameraBtn || !cameraCaptureInput || !selectedImageName) {
+        return;
+    }
+
+    async function compressImageFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+            return file;
+        }
+
+        const MAX_SIZE_BYTES = 700 * 1024;
+        const MAX_WIDTH = 960;
+        const JPEG_QUALITY = 0.85;
+
+        if (file.size <= MAX_SIZE_BYTES) {
+            return file;
+        }
+
+        const imageUrl = URL.createObjectURL(file);
+        try {
+            const image = await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = imageUrl;
+            });
+
+            const scale = Math.min(1, MAX_WIDTH / image.width);
+            const targetWidth = Math.max(1, Math.round(image.width * scale));
+            const targetHeight = Math.max(1, Math.round(image.height * scale));
+
+            const canvas = document.createElement('canvas');
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            const context = canvas.getContext('2d', { alpha: false });
+            context.drawImage(image, 0, 0, targetWidth, targetHeight);
+
+            const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', JPEG_QUALITY));
+            if (!blob) {
+                return file;
+            }
+
+            return new File([blob], `profile_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        } catch (error) {
+            return file;
+        } finally {
+            URL.revokeObjectURL(imageUrl);
+        }
+    }
+
+    openGalleryBtn.addEventListener('click', () => {
+        mainImageInput.click();
+    });
+
+    openCameraBtn.addEventListener('click', () => {
+        cameraCaptureInput.click();
+    });
+
+    mainImageInput.addEventListener('change', () => {
+        const file = mainImageInput.files && mainImageInput.files[0];
+        selectedImageName.textContent = file ? `Selected: ${file.name}` : 'No image selected yet.';
+    });
+
+    cameraCaptureInput.addEventListener('change', () => {
+        const file = cameraCaptureInput.files && cameraCaptureInput.files[0];
+        if (!file) {
+            return;
+        }
+
+        if (typeof DataTransfer === 'undefined') {
+            return;
+        }
+
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        mainImageInput.files = transfer.files;
+        mainImageInput.dispatchEvent(new Event('change', { bubbles: true }));
+        selectedImageName.textContent = `Selected: ${file.name}`;
+    });
+
+    profileForm.addEventListener('submit', async (event) => {
+        if (isSubmitting) {
+            return;
+        }
+
+        event.preventDefault();
+        isSubmitting = true;
+
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        }
+
+        try {
+            const selectedFile = mainImageInput.files && mainImageInput.files[0];
+            if (selectedFile && typeof DataTransfer !== 'undefined') {
+                const optimizedFile = await compressImageFile(selectedFile);
+                const transfer = new DataTransfer();
+                transfer.items.add(optimizedFile);
+                mainImageInput.files = transfer.files;
+            }
+        } finally {
+            profileForm.submit();
+        }
+    });
+});
+</script>
+
+{% endblock %}
