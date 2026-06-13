@@ -1,5 +1,5 @@
 Django==4.2.0
-djangore​stframework==3.14.0
+djangorestframework==3.14.0
 python-decouple==3.8
 python-dotenv==1.0.0
 Pillow==10.0.0
